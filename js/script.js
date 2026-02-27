@@ -110,10 +110,47 @@ function init() {
         });
     }
 
-    // AI Expand action
     const aiBtn = document.getElementById('ai-expand-btn');
     if (aiBtn) {
         aiBtn.addEventListener('click', expandWithAI);
+    }
+
+    // Modal logic
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const saveBtn = document.getElementById('save-key-btn');
+    const apiInput = document.getElementById('api-key-input');
+
+    if (settingsBtn && settingsModal) {
+        settingsBtn.addEventListener('click', () => {
+            const savedKey = localStorage.getItem('gemini_api_key');
+            if (savedKey) apiInput.value = savedKey;
+            settingsModal.style.display = 'flex';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+
+        saveBtn.addEventListener('click', () => {
+            const key = apiInput.value.trim();
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+                showToast('APIキーを保存しました！');
+            } else {
+                localStorage.removeItem('gemini_api_key');
+                showToast('APIキーを削除しました。');
+            }
+            settingsModal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
     }
 
     // Render templates
@@ -134,38 +171,99 @@ async function expandWithAI() {
     aiBtn.disabled = true;
 
     try {
-        // Step 1: Translate Japanese to English
+        const apiKey = localStorage.getItem('gemini_api_key');
+
+        // --- 1. Attempt High-Quality Expansion via Gemini API (if key exists) ---
+        if (apiKey) {
+            const promptText = `
+You are an expert AI image generation prompt engineer. 
+Take the following user input and perform two actions:
+1. Translate and expand it into a highly detailed, professional, cinematic, and descriptive English prompt for an image generator. Add relevant details for lighting, mood, framing, and texture.
+2. Translate that resulting expanded English prompt back into natural Japanese so the user understands what will be generated.
+
+Respond strictly with a valid JSON object with EXACTLY two keys: "english" and "japanese". Do not include any markdown backticks or other text.
+
+User Input: ${rawVal}
+`;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        responseMimeType: "application/json"
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                if (response.status === 400 || response.status === 403) {
+                    showToast('APIキーが無効です。簡易版（Google翻訳）を実行します。');
+                }
+                throw new Error(`Gemini API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const textResult = data.candidates[0].content.parts[0].text;
+
+            let parsed;
+            try {
+                parsed = JSON.parse(textResult);
+            } catch (err) {
+                const cleaned = textResult.replace(/^```json/g, '').replace(/```$/g, '').trim();
+                parsed = JSON.parse(cleaned);
+            }
+
+            if (parsed.english && parsed.japanese) {
+                subjectInput.dataset.translated = parsed.english;
+                subjectInput.value = parsed.japanese;
+                updatePrompt();
+                showToast('Gemini APIによるプロンプトの超・詳細化が完了しました！');
+                return; // Exit here on success
+            }
+        }
+
+        // --- 2. FALLBACK: Simple Expansion via Google Translate (if no key or Gemini fails) ---
         const resEN = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=en&dt=t&q=${encodeURIComponent(rawVal)}`);
         const dataEN = await resEN.json();
         let englishText = dataEN[0].map(item => item[0]).join('');
 
-        // Basic check to see if the translation failed or returned nonsense
         if (englishText.length < 3 && rawVal.length > 5) {
             throw new Error("Translation failed to generate meaningful English.");
         }
 
-        // Add explicit instructions to format the output scene
-        const baseScene = englishText;
-        const expandedEnglish = `${baseScene}, highly detailed visualization, professional and compelling scene, cinematic storytelling, sharp focus`;
-
-        // Store translated text in dataset for the prompt generator
+        const expandedEnglish = `${englishText}, highly detailed visualization, professional and compelling scene, cinematic storytelling, sharp focus`;
         subjectInput.dataset.translated = expandedEnglish;
 
-        // Step 2: Translate the expanded version BACK to Japanese to format the UI visibly
         const resJA = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&q=${encodeURIComponent(expandedEnglish)}`);
         const dataJA = await resJA.json();
         let formattedJapanese = dataJA[0].map(item => item[0]).join('');
 
-        // Update the textarea with the newly expanded/formatted Japanese
         subjectInput.value = formattedJapanese;
+        updatePrompt();
 
-        updatePrompt();
-        showToast('AIによる文章の整形と英語詳細化が完了しました！');
+        if (apiKey) {
+            showToast('通信エラーのため自動翻訳機能で代用しました');
+        } else {
+            showToast('自動翻訳機能による英語化が完了しました。');
+            // If they don't have a key, suggest the upgrade modal once
+            setTimeout(() => {
+                const settingsModal = document.getElementById('settings-modal');
+                if (settingsModal && !localStorage.getItem('gemini_api_key_prompted')) {
+                    settingsModal.style.display = 'flex';
+                    localStorage.setItem('gemini_api_key_prompted', 'true');
+                }
+            }, 1500);
+        }
+
     } catch (e) {
-        // Fallback directive with user feedback
-        subjectInput.dataset.translated = `[Translate to English and expand with vivid photographic detail]: ${rawVal}`;
+        console.error("Expand Error:", e);
+        // Deep fallback if both Gemini and Translate fail or network is down
+        subjectInput.dataset.translated = `[Generate highly detailed prompt based on]: ${rawVal}`;
         updatePrompt();
-        showToast('詳細化が難しいため、LLM側で自動拡張させる指示を埋め込みました');
+        showToast('エラー。プロンプト側に直接指示を埋め込みました。');
     } finally {
         aiBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI詳細化';
         aiBtn.disabled = false;
