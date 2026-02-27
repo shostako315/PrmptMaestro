@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Maestro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-decorations">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <header class="app-header">
+        <div class="header-container"
+            style="display: flex; justify-content: space-between; align-items: center; max-width: 1000px; padding: 0 1rem; margin: 0 auto;">
+            <div class="title-section" style="text-align: left;">
+                <div class="logo" style="justify-content: flex-start; margin-bottom: 0.2rem;">
+                    <h1>Prompt Maestro</h1>
+                </div>
+                <p class="subtitle" style="text-align: left;">FTC金融チーム発プレゼンテーション用 画像生成プロンプト共有ツール 🎼</p>
+            </div>
+
+            <div class="maestro-mascot-static"
+                style="display: flex; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.8); padding: 0.5rem 1.5rem 0.5rem 0.5rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(27,24,73,0.08); border: 1px solid rgba(226, 232, 240, 0.8); backdrop-filter: blur(4px);">
+                <img src="img/maestro_mascot.png" alt="マエストロ君"
+                    style="width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15)); border-radius: 50%;">
+                <div style="display: flex; flex-direction: column; text-align: left; gap: 0.1rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em;">AI
+                        ASSISTANT</span>
+                    <span style="font-size: 1.15rem; font-weight: 700; color: var(--primary);">マエストロ君 🤖🎶</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <!-- Origin Story / Disclaimer Section -->
+        <section class="glass-panel"
+            style="padding: 1.5rem 2rem; margin-bottom: 2.5rem; background: linear-gradient(to right, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.9)); border-left: 4px solid var(--primary);">
+            <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-main);">
+                <p style="margin-bottom: 0.75rem;"><strong>【開発背景とストーリー】</strong></p>
+                <p style="margin-bottom: 0.5rem;"><strong>もともと開発者（金融チーム:
+                        佐藤瑛吾）自身がAI画像生成を得意としていたものの、その「暗黙知」や「コツ」を他メンバーに共有する手段がありませんでした。</strong></p>
+                <p style="margin-bottom: 0.5rem;">ちょうどそんな中、「AI時代におけるコンサルタントは、単なるリサーチ・分析や資料作成だけでなく、自らVibe
+                    Coding等のプログラミングスキルを身につけ、即座にサービスを可視化して『触って使える形』に落とし込めるべきではないか？」と言う議論があったことをきっかけに、本ツールを作成してみることにしました。
+                </p>
+                <p style="margin-bottom: 0.5rem;">開発者は完全なコーディング初心者ですが、最先端のAIエージェントである「Google
+                    Antigravity」と対話することで、このツールをフルスクラッチで構築しています。</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;"><i
+                        class="fa-solid fa-circle-info"></i>
+                    ※なお、本システムは業務時間外に個人的な技術検証として生成したものですが、社内業務での生産性向上や活用可能性が非常に高いため、実務で安全に利用できるよう整形したうえでローンチしています。</p>
+            </div>
+        </section>
+
+        <!-- Generator Section -->
+        <section class="glass-panel generator-section">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-gears"></i> カスタム・プロンプト生成</h2>
+                <p>用途に合わせてパラメーターを選択し、統一感のあるプロンプトを生成します。</p>
+            </div>
+
+            <div class="form-container-compact">
+                <div class="input-group full-width">
+                    <label>描きたいメインテーマ（自由記述）</label>
+                    <div class="ai-expand-wrapper">
+                        <textarea id="subject-input" rows="3" placeholder="描きたいシーンを自由に日本語で入力してください..."></textarea>
+                        <button id="ai-expand-btn" title="AIでプロンプトを詳細化・英語表示に変換">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI詳細化
+                        </button>
+                    </div>
+                    <small
+                        style="color: #64748b; margin-top: 0.5rem; display: block;">※ビジネスシーン以外の画像を作るときは、以下の項目を「指定なし」にすると自由な生成が可能です。</small>
+                </div>
+
+                <div class="form-grid-2col">
+                    <div class="input-group">
+                        <label>画風・アートスタイル</label>
+                        <select id="style-select">
+                            <option value="none">指定なし（プロンプト・対象に依存）</option>
+                            <option value="flat" selected>モダンフラットデザイン（シンプル・資料向け）</option>
+                            <option value="isometric">アイソメトリック（等角投影法・全体俯瞰）</option>
+                            <option value="photo">高品質なビジネス写真（リアル志向）</option>
+                            <option value="clay">3Dクレイ（粘土細工風・ポップ）</option>
+                            <option value="lineart">洗練された線画（ミニマリスト）</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>人物の描写・抽象度</label>
+                        <select id="person-select">
+                            <option value="none">指定なし（または通常）</option>
+                            <option value="detailed facial expressions, clear eyes, professional attire">
+                                詳細な表情・ビジネススーツ（リアル）</option>
+                            <option value="faceless minimalist representation, abstract silhouettes">
+                                顔なし・モダンなシルエット（抽象・匿名）</option>
+                            <option value="casual smart-casual clothing, relaxed but professional">オフィスカジュアル・リラックスした表情
+                            </option>
+                            <option value="isolated character doing an action, clean cutout style">
+                                背景なしで何かをしている一人の人物（アイコン用）</option>
+                            <option value="no people, focus entirely on objects and environment">人物なし（オブジェクト・背景のみ）
+                            </option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>人物の多様性（ダイバーシティ）</label>
+                        <select id="demographic-select">
+                            <option value="none">指定なし（または通常）</option>
+                            <option value="diverse global team with various ethnicities and genders">
+                                グローバルな多様性チーム（男女・多国籍）</option>
+                            <option value="Japanese business professionals">日本のビジネスパーソン中心</option>
+                            <option value="young startup team, energetic">若手・スタートアップ風の活気あるチーム</option>
+                            <option value="senior male and female executives">シニアエグゼクティブ・重役層</option>
+                            <option value="not applicable (no people)">人を含めない</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>背景・環境設定</label>
+                        <select id="bg-select">
+                            <option value="none">指定なし（または通常）</option>
+                            <option value="modern bright corporate office, lots of natural light, glass walls">
+                                明るいモダンオフィス・ガラス張り</option>
+                            <option value="clean abstract minimal studio background, solid color">抽象的でクリーンなスタジオ・無地背景
+                            </option>
+                            <option value="pure white completely transparent background cutout">完全な白背景または透過（切り抜き用）
+                            </option>
+                            <option value="futuristic glowing digital tech environment, cyber nodes">近未来的・デジタルサイバー空間
+                            </option>
+                            <option value="cozy modern cafe or co-working space">カフェ・コワーキングスペース風</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>アイコン・グラフ要素の追加</label>
+                        <select id="graph-select">
+                            <option value="none">指定なし（追加しない）</option>
+                            <option value="floating holographic sharply rising upward bar graph">上昇する棒グラフ（ホログラム風浮遊）
+                            </option>
+                            <option value="dynamic upward glowing line graph representing growth">成長を示す輝く折れ線グラフ</option>
+                            <option value="intricate interconnected network nodes and gears">ネットワークのノード・歯車のアイコン</option>
+                            <option value="circular pie chart and data visualization dashboards">ダッシュボード・円グラフのデータ画面
+                            </option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>カメラアングル・構図</label>
+                        <select id="angle-select">
+                            <option value="none">指定なし（または通常）</option>
+                            <option value="eye-level medium shot, rule of thirds composition">アイレベル（標準の目線）・三分割法</option>
+                            <option value="wide angle shot, showing the entire environment">ワイドアングル（全体を広く映す）</option>
+                            <option value="low angle worm's-eye view, making subjects look powerful">ローアングル（見上げる・力強さ）
+                            </option>
+                            <option value="high angle bird's-eye view, looking down at the scene">ハイアングル（見下ろす・俯瞰）
+                            </option>
+                            <option value="close-up macro shot, focusing on specific details">クローズアップ（手元や特定の詳細）</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>ライティング（光の当たり方）</label>
+                        <select id="lighting-select">
+                            <option value="none">指定なし（または通常）</option>
+                            <option value="soft diffuse studio lighting, highly professional">ソフトなスタジオ照明（標準・綺麗）</option>
+                            <option value="bright cinematic lighting with lens flares">シネマティック照明・レンズフレア</option>
+                            <option value="dramatic high-contrast chiaroscuro lighting">高コントラスト・ドラマチックな光と影</option>
+                            <option value="neon glowing ambient light, futuristic vibes">ネオンの環境光・サイバー風</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>コーポレートカラー・色調</label>
+                        <select id="color-select">
+                            <option value="none">指定なし（または通常）</option>
+                            <option value="corporate">フォーティエンスブルー＆ホワイト（推奨）</option>
+                            <option value="monochrome">モノクロ・グレー基調（洗練）</option>
+                            <option value="vibrant">鮮やかでエネルギッシュ（強調）</option>
+                            <option value="warm">温かみのあるオレンジ・イエロー（親しみ）</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>アスペクト比・レイアウト</label>
+                        <select id="ar-select">
+                            <option value="16:9 wide layout with negative space on edges for text">16:9 ＋ 余白（スライド表紙向け）
+                            </option>
+                            <option value="16:9 wide layout, scene filling the frame">16:9 ＋ フル画面（挿絵向け）</option>
+                            <option value="4:3 standard layout">4:3（標準スライド向け）</option>
+                            <option value="1:1 square layout">1:1（アイコン・SNS向け）</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="result-box">
+                <label>生成されたプロンプト (ChatGPT / Gemini 等で利用可能)</label>
+                <div class="prompt-display-area">
+                    <textarea id="generated-prompt" readonly></textarea>
+                    <button id="copy-btn" class="btn-primary">
+                        <i class="fa-regular fa-copy"></i> コピーする
+                    </button>
+                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">
+                        <p style="margin-top: 4px; color: #f59e0b;"><i class="fa-solid fa-triangle-exclamation"></i>
+                            <b>ご注意:</b> ツール（ChatGPT, Gemini,
+                            Midjourney等）によって出力される画像のテイストや精度には差があります。もし出力内容に大きな違和感がある場合や、プロンプトの記述がおかしい場合は、開発者（金融チーム佐藤）までお知らせください。
+                        </p>
+                        <p style="margin-top: 4px; color: #dc2626;"><i class="fa-solid fa-scale-balanced"></i>
+                            <b>コンプライアンス等:</b> 最新のAI関連の規定や会社規則については、AI-CoE等の然るべき部署にご相談の上ご利用ください。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Template Gallery -->
+        <section class="gallery-section">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-layer-group"></i> 頻出テンプレート・ギャラリー</h2>
+                <p>スライドでよく使われるシチュエーションのプロンプト集。選択すると上部のジェネレーターに反映されます。</p>
+            </div>
+
+            <div class="template-grid" id="template-grid">
+                <!-- Javascript will populate this -->
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast">
+        <img src="img/maestro_mascot.png" alt="マエストロ君" class="toast-mascot"
+            style="width: 40px; height: 40px; margin-right: 10px; display: none;">
+        <span id="toast-message">クリップボードにコピーしました！</span>
+    </div>
+
+    <!-- Celebration Mascot Overlay -->
+    <div id="celebration-mascot"
+        style="position: fixed; bottom: -200px; right: 2rem; width: 150px; height: 150px; z-index: 1000; transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); pointer-events: none; opacity: 0;">
+        <img src="img/maestro_mascot.png" alt="Happy Maestro"
+            style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));">
+        <div
+            style="position: absolute; top: -30px; left: -20px; background: white; padding: 0.5rem 1rem; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: bold; color: var(--primary); font-size: 0.9rem; white-space: nowrap;">
+            できました！✨</div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
