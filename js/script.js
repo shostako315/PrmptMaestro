@@ -91,7 +91,10 @@ function init() {
         delete subjectInput.dataset.translated;
         updatePrompt();
     });
-    styleSelect.addEventListener('change', updatePrompt);
+    styleSelect.addEventListener('change', () => {
+        updatePrompt();
+        updateStylePreview();
+    });
     colorSelect.addEventListener('change', updatePrompt);
     arSelect.addEventListener('change', updatePrompt);
     personSelect.addEventListener('change', updatePrompt);
@@ -155,6 +158,53 @@ function init() {
 
     // Render templates
     renderTemplates();
+
+    // Initialize preview
+    updateStylePreview();
+}
+
+function updateStylePreview() {
+    const stylePreviewImg = document.getElementById('style-preview-img');
+    const stylePreviewDesc = document.getElementById('style-preview-desc');
+    if (!stylePreviewImg || !stylePreviewDesc) return;
+
+    const previews = {
+        'none': {
+            img: 'img/maestro_mascot.png',
+            desc: '指定なし（プロンプトの内容や、画像生成AIの解釈に依存し自由にお任せします）'
+        },
+        'flat': {
+            img: 'img/style_flat.png',
+            desc: '「モダンフラットデザイン」は、シンプルで洗練された資料・スライド向けのイラストです。'
+        },
+        'isometric': {
+            img: 'img/style_isometric.png',
+            desc: '「アイソメトリック」は、空間を斜め上から俯瞰した立体的でポップなイラストです。'
+        },
+        'photo': {
+            img: 'img/style_photo.png',
+            desc: '「高品質なビジネス写真」は、実写の人間やオフィス風景をリアルに美しく描写します。'
+        },
+        'clay': {
+            img: 'img/style_clay.png',
+            desc: '「3Dクレイ」は、粘土細工のような丸みと温かみのある3Dアイコン風の仕上がりです。'
+        },
+        'lineart': {
+            img: 'img/style_lineart.png',
+            desc: '「洗練された線画」は、色数を抑えたミニマルでおしゃれな手書き風の線画アートです。'
+        }
+    };
+
+    const selectedStyle = styleSelect.value || 'flat';
+    const previewData = previews[selectedStyle] || previews['flat'];
+
+    // Add a simple fade animation effect
+    stylePreviewImg.style.opacity = '0';
+    setTimeout(() => {
+        stylePreviewImg.src = previewData.img;
+        stylePreviewDesc.textContent = previewData.desc;
+        stylePreviewImg.style.opacity = '1';
+    }, 200);
 }
 
 async function expandWithAI() {
